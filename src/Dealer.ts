@@ -117,19 +117,12 @@ class Dealer {
             });
             this.startMission()
         }
-        else {
+        else
             this.rejectedTeams += 1
-            if (this.rejectedTeams === 5) {
-                fields.push({
-                    name: `5연속으로 원정대 결성에 실패하였습니다.`,
-                    value: `이번 라운드는 미션 수행 없이 악의 세력이 득점합니다.`
-                });
-            }
-        }
         embed.setFields(fields);
         this.channelStartedGame.send({ embeds: [embed] });
         if (this.rejectedTeams === 5)
-            this.emitter.emit(`roundEnd`, false);
+            this.emitter.emit(`gameEnd`);
         else if (this.playerAgreed.length <= this.playerDisagreed.length)
             this.notifyTurnToTeamLeader();
     }

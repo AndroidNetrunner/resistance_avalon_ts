@@ -67,7 +67,8 @@ class Game {
                 this.channelStartedGame.send({embeds: [embed]});
                 this.startNewRound();
             }
-        })
+        });
+        this.emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
     };
     setPlayerList(host: Host): Player[] {
         const numberOfLoyal = host.userList.length !== 9 ? Math.floor(host.userList.length / 2 + 1) : 6;
