@@ -32,30 +32,34 @@ const quest_sheet = {
 }
 
 class Game {
-    playerList: Player[];
-    teamLeader: Player;
-    channelStartedGame: TextChannel;
-    missionBoard: number[];
-    roundNumber: number;
-    emitter: any = new EventEmitter();
-    loyalScore: number;
-    evilScore: number;
+    private _playerList: Player[];
+    private _teamLeader: Player;
+    private _channelStartedGame: TextChannel;
+    private _missionBoard: number[];
+    private _roundNumber: number;
+    private _emitter: any = new EventEmitter();
+    private _loyalScore: number;
+    private _evilScore: number;
+
+    get playerList() {
+        return this._playerList.map(player => player.user.username);
+    }
     constructor(host: Host) {
-        this.playerList = this.setPlayerList(host);
+        this._playerList = this.setPlayerList(host);
         this.notifyRoles();
-        this.channelStartedGame = host.channelStartedGame;
-        this.missionBoard = quest_sheet[this.playerList.length as 5 | 6 | 7 | 8 | 9 | 10];
-        this.roundNumber = 1;
-        this.teamLeader = this.playerList[Math.floor(Math.random() * this.playerList.length)];
-        this.loyalScore = 0;
-        this.evilScore = 0;
+        this._channelStartedGame = host.channelStartedGame;
+        this._missionBoard = quest_sheet[this._playerList.length as 5 | 6 | 7 | 8 | 9 | 10];
+        this._roundNumber = 1;
+        this._teamLeader = this._playerList[Math.floor(Math.random() * this._playerList.length)];
+        this._loyalScore = 0;
+        this._evilScore = 0;
         this.startNewRound();
-        this.emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
-            this.roundNumber += 1;
-            missionSuccess ? this.loyalScore += 1 : this.evilScore += 1;
-            this.teamLeader = newTeamLeader;
-            if (this.loyalScore === 3 || this.evilScore === 3) {
-                if (this.loyalScore === 3)
+        this._emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
+            this._roundNumber += 1;
+            missionSuccess ? this._loyalScore += 1 : this._evilScore += 1;
+            this._teamLeader = newTeamLeader;
+            if (this._loyalScore === 3 || this._evilScore === 3) {
+                if (this._loyalScore === 3)
                     this.notifyAssassinationToAssassin();
                 else
                     this.revealResult('3번의 미션 실패로 인한 악의 하수인 승리');
@@ -63,14 +67,14 @@ class Game {
             else {
                 const embed = new MessageEmbed()
                 .setTitle('현재까지 각 진영의 득점 상황은 다음과 같습니다.')
-                .setDescription(`선의 세력: ${this.loyalScore}, 악의 하수인: ${this.evilScore}`);
-                this.channelStartedGame.send({embeds: [embed]});
+                .setDescription(`선의 세력: ${this._loyalScore}, 악의 하수인: ${this._evilScore}`);
+                this._channelStartedGame.send({embeds: [embed]});
                 this.startNewRound();
             }
         });
-        this.emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
+        this._emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
     };
-    setPlayerList(host: Host): Player[] {
+    private setPlayerList(host: Host): Player[] {
         const numberOfLoyal = host.userList.length !== 9 ? Math.floor(host.userList.length / 2 + 1) : 6;
         const numberOfEvil = host.userList.length - numberOfLoyal;
         const loyalRoles = host.activeSpecialRoles.get('loyal') as string[];
@@ -86,48 +90,49 @@ class Game {
             }
         return playerList;
     }
-    notifyRoles() {
-        for (let player of this.playerList) {
+
+    private notifyRoles() {
+        for (let player of this._playerList) {
             switch (player.role) {
                 case MERLIN:
-                    merlin(player, this.playerList);
+                    merlin(player, this._playerList);
                     break;
                 case LOYAL:
                     loyal(player);
                     break;
                 case EVIL:
-                    evil(player, this.playerList);
+                    evil(player, this._playerList);
                     break;
                 case PERCIVAL:
-                    percival(player, this.playerList);
+                    percival(player, this._playerList);
                     break;
                 case MORDRED:
-                    mordred(player, this.playerList);
+                    mordred(player, this._playerList);
                     break;
                 case MORGANA:
-                    morgana(player, this.playerList);
+                    morgana(player, this._playerList);
                     break;
                 case OBERON:
                     oberon(player);
                     break;
                 case ASSASSIN:
-                    assassin(player, this.playerList);
+                    assassin(player, this._playerList);
             }
         }
     }
-    startNewRound() {
-        return new Dealer(this.missionBoard[this.roundNumber - 1], this.teamLeader, this.playerList, this.channelStartedGame, this.roundNumber, this.emitter);
+    private startNewRound() {
+        return new Dealer(this._missionBoard[this._roundNumber - 1], this._teamLeader, this._playerList, this._channelStartedGame, this._roundNumber, this._emitter);
     }
-    async notifyAssassinationToAssassin() {
+    private async notifyAssassinationToAssassin() {
         const validEmoticons : string[] = [];
         let stringOfemoticonOfPlayers = "";
-        for (let player of this.playerList) {
+        for (let player of this._playerList) {
             if (![ASSASSIN, EVIL, MORDRED, MORGANA].includes(player.role)) {
                 stringOfemoticonOfPlayers += `${player.emoticon}: ${player.user.username}\n`;
                 validEmoticons.push(player.emoticon);
             }
         }
-        for (let player of this.playerList) {
+        for (let player of this._playerList) {
             if (player.role === ASSASSIN) {
                 const embed = new MessageEmbed()
                 .setTitle('이제 멀린을 암살할 시간입니다.')
@@ -137,13 +142,13 @@ class Game {
                     value: stringOfemoticonOfPlayers
                 });
                 const assassin = player;
-                const message = await this.channelStartedGame.send({embeds: [embed]});
+                const message = await this._channelStartedGame.send({embeds: [embed]});
                 for (let emoticon of validEmoticons)
                     message.react(emoticon);
                 const filter = (reaction: MessageReaction, user: User) => user.id === assassin.user.id && validEmoticons.includes(reaction.emoji.name as string);
                 const collector = message.createReactionCollector({ filter: filter })
                 collector.on('collect', (reaction: MessageReaction, user: User) => {
-                    for (let target of this.playerList) {
+                    for (let target of this._playerList) {
                         if (target.emoticon === reaction.emoji.name) {
                             const description = target.role === MERLIN ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
                             this.revealResult(description);
@@ -155,9 +160,9 @@ class Game {
             }
         }
     }
-    revealResult(description: string) {
+    private revealResult(description: string) {
         let stringOfRoleOfPlayers = "";
-        for (let player of this.playerList)
+        for (let player of this._playerList)
             stringOfRoleOfPlayers += `${player.user.username}: ${player.role}\n`;
         const embed = new MessageEmbed()
         .setTitle('게임이 모두 종료되었습니다!')
@@ -167,8 +172,8 @@ class Game {
             value: stringOfRoleOfPlayers
         })
         .setColor(description === "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리" ? "BLUE" : "RED");
-        this.channelStartedGame.send({embeds: [embed]});
-        active_games.delete(this.channelStartedGame.id);
+        this._channelStartedGame.send({embeds: [embed]});
+        active_games.delete(this._channelStartedGame.id);
     }
 
 }

@@ -1,15 +1,15 @@
 import { ICommand } from "wokcommands";
-import { active_games, active_hosts } from "../state";
+import { active_games } from "../state";
 
-const reset : ICommand = {
-    category: 'reset',
-    description: 'delete current playing game',
+const order : ICommand = {
+    category: 'order',
+    description: 'print the order of teamLeader',
     callback: ({message}) => {
         if (active_games.get(message.channelId)) {
-            return `${active_games.get(message.channelId)?.playerList.map(player => `${player.user.username} -> `).join('')}`.slice(0, -4);
+            return `${active_games.get(message.channelId)?.playerList.join('')}`.slice(0, -4);
         }
-        return `게임이 초기화되었습니다.`;
+        return `진행 중인 게임이 존재하지 않습니다.`;
     }
 }
 
-export default reset;
+export default order;

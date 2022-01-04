@@ -1,7 +1,6 @@
 import { MessageEmbed, TextChannel } from "discord.js";
 import { ICommand } from "wokcommands";
 import Host from "../Host";
-import Player from "../Player";
 import { active_hosts } from "../state";
 
 const startNewGame: ICommand = {

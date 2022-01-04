@@ -2,8 +2,6 @@ import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction
 import Player from "./Player";
 import roles from "./roles";
 
-const EventEmitter = require('events');
-
 function addAgreeAndDisagreeButtons() {
     const actionRow = new MessageActionRow();
     const agreeButton = new MessageButton()
@@ -31,6 +29,7 @@ class Dealer {
     teamLeader: Player;
     emitter: any;
     roundNumber: number;
+    
     constructor(numberOfTeammates: number, firstTeamLeader: Player, playerList: Player[], channelStartedGame: TextChannel, roundNumber: number, emitter: any) {
         this.numberOfTeammates = numberOfTeammates;
         this.teamLeader = firstTeamLeader;
@@ -40,7 +39,7 @@ class Dealer {
         this.emitter = emitter;
         this.roundNumber = roundNumber;
     }
-    async startVote() {
+    private async startVote() {
         const embed = new MessageEmbed()
             .setTitle(`${this.teamLeader.user.username}님이 ${this.roundNumber}라운드 ${this.rejectedTeams + 1}번째 원정대를 제안하였습니다.`)
             .setDescription(`아래 버튼을 눌러 찬성 혹은 반대를 투표해주세요.`)
@@ -70,7 +69,7 @@ class Dealer {
         }
     }
 
-    async startMission() {
+    private async startMission() {
         const embed = new MessageEmbed()
         .setTitle('이제 미션카드를 제출할 시간입니다!')
         .setDescription('아래 버튼을 눌러 미션 성공과 미션 실패 중 한 가지를 선택해주세요.');
@@ -97,7 +96,7 @@ class Dealer {
             })
         }
     }
-    revealVotes() {
+    private revealVotes() {
         const fields = [{
             name: '찬성',
             value: `${this.playerAgreed.length}표: ${this.playerAgreed.map(player => player.user.username).join()}`
@@ -126,12 +125,12 @@ class Dealer {
         else if (this.playerAgreed.length <= this.playerDisagreed.length)
             this.notifyTurnToTeamLeader();
     }
-    handOverNextLeader() {
+    private handOverNextLeader() {
         let index = this.playerList.indexOf(this.teamLeader);
         index = (index + 1) % this.playerList.length;
         this.teamLeader = this.playerList[index];
     }
-    revealMissionResult() {
+    private revealMissionResult() {
         const missionSuccess = (this.playerList.length >= 7 && this.roundNumber === 4 && this.missionFail < 2) || !this.missionFail;
         const description = missionSuccess ? '원정대는 미션에 성공하였습니다!' : '아쉽게도 원정대는 미션에 실패하였습니다...';
         const embed = new MessageEmbed()
@@ -148,14 +147,14 @@ class Dealer {
         this.channelStartedGame.send({embeds : [embed]});
         this.emitter.emit(`roundEnd`, missionSuccess, this.teamLeader);
     }
-    addPlayerToTeam(player: Player) {
+    private addPlayerToTeam(player: Player) {
         this.proposedTeam.push(player);
     }
-    removePlayerFromTeam(player: Player) {
+    private removePlayerFromTeam(player: Player) {
         const index = this.proposedTeam.indexOf(player);
         this.proposedTeam.splice(index, 1);
     }
-    async notifyTurnToTeamLeader() {
+    private async notifyTurnToTeamLeader() {
         this.proposedTeam = [];
         this.playerAgreed = [];
         this.playerDisagreed = [];
