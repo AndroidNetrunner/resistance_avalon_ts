@@ -53,6 +53,7 @@ class Game {
         this._teamLeader = this._playerList[Math.floor(Math.random() * this._playerList.length)];
         this._loyalScore = 0;
         this._evilScore = 0;
+        this.notifyMissionBoard();
         this.startNewRound();
         this._emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
             this._roundNumber += 1;
@@ -74,6 +75,22 @@ class Game {
         });
         this._emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
     };
+
+    private notifyMissionBoard(): void {
+        const embed = new MessageEmbed()
+        .setTitle('게임이 시작되었습니다!')
+        .setDescription('모든 플레이어에게 역할이 주어졌으며, 역할은 DM으로 확인하실 수 있습니다.')
+        .setFields({
+            name: '각 라운드 별 원정대 인원 수는 다음과 같습니다.',
+            value: `1라운드: ${this._missionBoard[0]}
+                    2라운드: ${this._missionBoard[1]}
+                    3라운드: ${this._missionBoard[2]}
+                    4라운드: ${this._missionBoard[3]}
+                    5라운드: ${this._missionBoard[4]}`
+        });
+        this._channelStartedGame.send({embeds: [embed]});
+    }
+
     private setPlayerList(host: Host): Player[] {
         const numberOfLoyal = host.userList.length !== 9 ? Math.floor(host.userList.length / 2 + 1) : 6;
         const numberOfEvil = host.userList.length - numberOfLoyal;
