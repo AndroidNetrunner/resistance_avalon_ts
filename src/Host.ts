@@ -31,7 +31,7 @@ class Host {
     addSpecialRole(role: string) {
         if (!(roles.loyal.includes(role) || roles.evil.includes(role)))
             return `${role}은(는) 존재하지 않는 역할입니다.`;
-        if (this._activeSpecialRoles.get('evil')?.includes(role))
+        if (this._activeSpecialRoles.get('loyal')?.includes(role) || this._activeSpecialRoles.get('evil')?.includes(role))
             return `${role}은(는) 이미 추가된 역할입니다.`;
         if (roles.loyal.includes(role))
             this._activeSpecialRoles.get('loyal')?.push(role);
