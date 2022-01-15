@@ -52,7 +52,7 @@ class Host {
         }
         else
             return `${role}은(는) 추가되지 않은 역할입니다.`;
-        return `${role}이(가) 게임에 추가되었습니다.`;
+        return `${role}이(가) 게임에서 삭제되었습니다.`;
     }
 }
 
