@@ -37,7 +37,7 @@ class Host {
             this._activeSpecialRoles.get('loyal')?.push(role);
         else
             this._activeSpecialRoles.get('evil')?.push(role);
-        return false;
+        return `${role}이(가) 게임에 추가되었습니다.`;
     }
     removeSpecialRole(role: string) {
         if (!(roles.loyal.includes(role) || roles.evil.includes(role)))
@@ -52,7 +52,7 @@ class Host {
         }
         else
             return `${role}은(는) 추가되지 않은 역할입니다.`;
-        return false;
+        return `${role}이(가) 게임에 추가되었습니다.`;
     }
 }
 
