@@ -46,15 +46,14 @@ class Game {
     }
     constructor(host: Host) {
         this._playerList = this.setPlayerList(host);
-        this.notifyRoles();
         this._channelStartedGame = host.channelStartedGame;
         this._missionBoard = quest_sheet[this._playerList.length as 5 | 6 | 7 | 8 | 9 | 10];
         this._roundNumber = 1;
         this._teamLeader = this._playerList[Math.floor(Math.random() * this._playerList.length)];
         this._loyalScore = 0;
         this._evilScore = 0;
-        this.notifyMissionBoard();
-        this.startNewRound();
+        this.startNewGame(host.activeSpecialRoles);
+        this.notifyRoles();
         this._emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
             this._roundNumber += 1;
             missionSuccess ? this._loyalScore += 1 : this._evilScore += 1;
@@ -76,10 +75,10 @@ class Game {
         this._emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
     };
 
-    private notifyMissionBoard(): void {
+    private startNewGame(specialRoles: Map<string, string[]>): void {
         const embed = new MessageEmbed()
         .setTitle('게임이 시작되었습니다!')
-        .setDescription('모든 플레이어에게 역할이 주어졌으며, 역할은 DM으로 확인하실 수 있습니다.')
+        .setDescription(`특수 직업: ${specialRoles.get('loyal')?.concat(specialRoles.get('evil') as string[]).join()}`)
         .setFields({
             name: '각 라운드 별 원정대 인원 수는 다음과 같습니다.',
             value: `1라운드: ${this._missionBoard[0]}
@@ -89,6 +88,7 @@ class Game {
                     5라운드: ${this._missionBoard[4]}`
         });
         this._channelStartedGame.send({embeds: [embed]});
+        this.startNewRound();
     }
 
     private setPlayerList(host: Host): Player[] {
