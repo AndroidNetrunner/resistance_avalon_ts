@@ -14,7 +14,7 @@ const client = new DiscordJS.Client({
     ]
 })
 
-client.login(process.env.TOKEN).then(() => {client.user?.setAvatar('resistance_avalon.jpg'); client.user?.setActivity('코드 수정', {type: 'PLAYING'})});
+client.login(process.env.TOKEN).then(() => {client.user?.setAvatar('resistance_avalon.jpg'); client.user?.setActivity('>명령어', {type: 'PLAYING'})});
 
 client.on('ready', () => {
     console.log('The bot is ready');
