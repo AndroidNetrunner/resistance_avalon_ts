@@ -6,7 +6,7 @@ const order : ICommand = {
     description: 'print the order of teamLeader',
     callback: ({message}) => {
         if (active_games.get(message.channelId)) {
-            return `${active_games.get(message.channelId)?.playerList.join('')}`.slice(0, -4);
+            return `${active_games.get(message.channelId)?.playerList.join(' -> ')}`;
         }
         return `진행 중인 게임이 존재하지 않습니다.`;
     }

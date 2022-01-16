@@ -10,7 +10,7 @@ const close : ICommand = {
         if (!host)
             return `시작한 게임이 존재하지 않습니다.`;
         if (host.numberOfPlayers < 5)
-            return `현재 플레이어 인원수가 ${host.numberOfPlayers}입니다. 최소 5명이 있어야 게임을 진행할 수 있습니다.`;
+            return `현재 플레이어 인원수가 ${host.numberOfPlayers}명입니다. 최소 5명이 있어야 게임을 진행할 수 있습니다.`;
         active_games.set(message.channelId, new Game(host));
         active_hosts.delete(message.channelId);
     }
