@@ -1,7 +1,7 @@
 import {ICommand} from 'WOKCommands';
 import { active_hosts } from '../state';
 
-const addSpecialRole : ICommand = {
+const removeSpecialRole : ICommand = {
     category: 'joining',
     description: 'new player tries to join',
     callback: ({message}) => {
@@ -16,4 +16,4 @@ const addSpecialRole : ICommand = {
     }
 }
 
-export default addSpecialRole;
+export default removeSpecialRole;
