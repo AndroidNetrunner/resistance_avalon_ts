@@ -10,7 +10,7 @@ export const MORDRED = "모드레드";
 export const MORGANA = "모르가나";
 export const OBERON = "오베론";
 
-export function merlin(player: Player, playerList: Player[]) {
+export async function merlin(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if (roles.evil.includes(opponent.role) && opponent.role !== MORDRED)
@@ -24,18 +24,18 @@ export function merlin(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 악의 세력은...',
         value: `${visiblePlayers.join()}입니다!`
     })
-    player.user.send({embeds:[embed]});
+    await player.user.send({embeds:[embed]});
 }
 
-export function loyal(player: Player) {
+export async function loyal(player: Player) {
     const embed = new MessageEmbed()
     .setTitle('당신의 역할은 선의 세력입니다.')
     .setDescription('다른 선의 세력을 파악해 미션을 성공시켜 게임에서 승리하세요!')
     .setColor('BLUE');
-    player.user.send({embeds:[embed]});
+    await player.user.send({embeds:[embed]});
 }
 
-export function evil(player: Player, playerList: Player[]) {
+export async function evil(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
@@ -49,10 +49,10 @@ export function evil(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 악의 세력은...',
         value: `${visiblePlayers.join()}입니다!`
     });
-    player.user.send({embeds: [embed]});
+    await player.user.send({embeds: [embed]});
 }
 
-export function percival(player: Player, playerList: Player[]) {
+export async function percival(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if ([MERLIN, MORGANA].includes(opponent.role))
@@ -66,10 +66,10 @@ export function percival(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 멀린 후보는...',
         value: `${visiblePlayers.join()}입니다!`
     });
-    player.user.send({embeds: [embed]});
+    await player.user.send({embeds: [embed]});
 }
 
-export function assassin(player: Player, playerList: Player[]) {
+export async function assassin(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
@@ -83,10 +83,10 @@ export function assassin(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 악의 세력은...',
         value: `${visiblePlayers.join()}입니다!`
     });
-    player.user.send({embeds: [embed]});
+    await player.user.send({embeds: [embed]});
 }
 
-export function mordred(player: Player, playerList: Player[]) {
+export async function mordred(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
@@ -100,10 +100,10 @@ export function mordred(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 악의 세력은...',
         value: `${visiblePlayers.join()}입니다!`
     });
-    player.user.send({embeds: [embed]});
+    await player.user.send({embeds: [embed]});
 }
 
-export function morgana(player: Player, playerList: Player[]) {
+export async function morgana(player: Player, playerList: Player[]) {
     const visiblePlayers = [];
     for (let opponent of playerList) {
         if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
@@ -117,15 +117,15 @@ export function morgana(player: Player, playerList: Player[]) {
         name: '당신의 눈에 보이는 악의 세력은...',
         value: `${visiblePlayers.join()}입니다!`
     });
-    player.user.send({embeds:[embed]});
+    await player.user.send({embeds:[embed]});
 }
 
-export function oberon(player: Player) {
+export async function oberon(player: Player) {
     const embed = new MessageEmbed()
     .setTitle('당신의 역할은 오베론입니다.')
     .setDescription('악의 하수인이지만, 다른 악의 하수인들과 정체를 서로 모릅니다.')
     .setColor('RED');
-    player.user.send({embeds: [embed]});
+    await player.user.send({embeds: [embed]});
 }
 
 const roles = {
