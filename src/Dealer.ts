@@ -62,6 +62,7 @@ class Dealer {
                         this.playerDisagreed.push(player);
                         player.user.send(`반대에 투표하셨습니다.`);
                     }
+                    this.channelStartedGame.send(`${player.user.username}님이 투표하셨습니다.`);
                     message.delete();
                     if (this.playerAgreed.length + this.playerDisagreed.length >= this.playerList.length)
                         this.revealVotes();
