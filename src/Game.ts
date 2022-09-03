@@ -1,4 +1,4 @@
-import { MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
+import { MessageEmbed, MessageReaction, TextBasedChannel, User } from "discord.js";
 import Dealer from "./Dealer";
 import Host from "./Host";
 import Player from "./Player";
@@ -34,7 +34,7 @@ const quest_sheet = {
 class Game {
     private _playerList: Player[];
     private _teamLeader: Player;
-    private _channelStartedGame: TextChannel;
+    private _channelStartedGame: TextBasedChannel;
     private _missionBoard: number[];
     private _roundNumber: number;
     private _emitter: any = new EventEmitter();
@@ -108,7 +108,7 @@ class Game {
         return playerList;
     }
 
-    private async notifyRoles(channel: TextChannel) {
+    private async notifyRoles(channel: TextBasedChannel) {
         try {
         for (let player of this._playerList) {
             switch (player.role) {
@@ -142,7 +142,7 @@ class Game {
         channel.send(
             `앗! 누군가가 봇에게 DM 발송 권한을 주지 않아 DM 발송에 실패했습니다. 
             설정 -> 개인정보 보호 및 보안 -> "서버 멤버가 보내는 다이렉트 메세지 허용하기"가 켜져있는지 확인해주세요!
-            모든 플레이어가 허용한 후, >리셋을 입력해 게임을 초기화할 수 있습니다.`);
+            모든 플레이어가 허용한 후, /리셋을 입력해 게임을 초기화할 수 있습니다.`);
     }
     }
     private startNewRound() {

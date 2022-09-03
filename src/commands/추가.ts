@@ -1,18 +1,18 @@
-import {ICommand} from 'WOKCommands';
+import {ICommand} from 'wokcommands';
 import { active_hosts } from '../state';
 
 const addSpecialRole : ICommand = {
     category: 'joining',
     description: 'new player tries to join',
-    callback: ({message}) => {
-        const currentHost = active_hosts.get(message.channelId);
+    slash: true,
+    minArgs: 1,
+    expectedArgs: "<role>",
+    callback: ({ interaction, args }) => {
+        const currentHost = active_hosts.get(interaction.channelId);
         if (!currentHost)
             return '시작한 게임이 존재하지 않습니다.';
-        const content = message.content.split(' ');
-        if (content.length === 2) {
-            const role = content[1];
+        const [role] = args;
             return currentHost.addSpecialRole(role);
-        }
     }
 }
 

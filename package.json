@@ -18,9 +18,10 @@
   "dependencies": {
     "async-mutex": "^0.3.2",
     "discord.js": "^13.5.0",
+    "dotenv": "^16.0.2",
     "events": "^3.3.0",
     "node": "^17.3.0",
-    "nodemon": "^2.0.15",
+    "nodemon": "^2.0.19",
     "wokcommands": "^1.5.3"
   }
 }
