@@ -1,4 +1,4 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
+import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction, TextBasedChannel, User } from "discord.js";
 import Player from "./Player";
 import roles from "./roles";
 
@@ -19,7 +19,7 @@ function addAgreeAndDisagreeButtons() {
 class Dealer {
     playerList: Player[];
     numberOfTeammates: number;
-    channelStartedGame: TextChannel;
+    channelStartedGame: TextBasedChannel;
     rejectedTeams: number = 0;
     proposedTeam: Player[] = [];
     playerAgreed: Player[] = [];
@@ -30,7 +30,7 @@ class Dealer {
     emitter: any;
     roundNumber: number;
     
-    constructor(numberOfTeammates: number, firstTeamLeader: Player, playerList: Player[], channelStartedGame: TextChannel, roundNumber: number, emitter: any) {
+    constructor(numberOfTeammates: number, firstTeamLeader: Player, playerList: Player[], channelStartedGame: TextBasedChannel, roundNumber: number, emitter: any) {
         this.numberOfTeammates = numberOfTeammates;
         this.teamLeader = firstTeamLeader;
         this.playerList = playerList;

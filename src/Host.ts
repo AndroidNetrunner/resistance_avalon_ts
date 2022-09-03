@@ -1,10 +1,10 @@
-import { Channel, TextChannel, User } from "discord.js";
+import { Channel, TextBasedChannel, User } from "discord.js";
 import roles, { ASSASSIN, MERLIN } from "./roles";
 
 class Host {
      userList: User[];
     private _activeSpecialRoles: Map<string, string[]>;
-    private _channelStartedGame: TextChannel;
+    private _channelStartedGame: TextBasedChannel;
 
     get channelStartedGame() {
         return this._channelStartedGame;
@@ -18,7 +18,7 @@ class Host {
         return this.userList.length;
     }
 
-    constructor(user: User, channelStartedGame: TextChannel) {
+    constructor(user: User, channelStartedGame: TextBasedChannel) {
         this.userList = [user];
         this._channelStartedGame = channelStartedGame;
         this._activeSpecialRoles = new Map();
