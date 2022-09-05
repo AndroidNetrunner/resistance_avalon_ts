@@ -109,8 +109,9 @@ class Game {
     }
 
     private async notifyRoles(channel: TextBasedChannel) {
-        try {
+        try {	
         for (let player of this._playerList) {
+		console.log(player);
             switch (player.role) {
                 case MERLIN:
                     await merlin(player, this._playerList);
