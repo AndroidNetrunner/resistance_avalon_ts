@@ -1,8 +1,8 @@
 import { User } from "discord.js";
-import Game from "./Game";
+import { Role } from "./roles";
 
 class Player {
-    private _role: string;
+    private _role: Role;
     private _user: User;
     private _emoticon: string;
 
@@ -18,7 +18,7 @@ class Player {
         return this._emoticon;
     }
 
-    constructor(user: User, role : string, emoticon: string) {
+    constructor(user: User, role : Role, emoticon: string) {
         this._user = user;
         this._role = role;
         this._emoticon = emoticon;

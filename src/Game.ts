@@ -2,9 +2,8 @@ import { MessageEmbed, MessageReaction, TextBasedChannel, User } from "discord.j
 import Dealer from "./Dealer";
 import Host from "./Host";
 import Player from "./Player";
-import { assassin, ASSASSIN, evil, EVIL, loyal, LOYAL, merlin, MERLIN, mordred, MORDRED, morgana, MORGANA, oberon, OBERON, percival, PERCIVAL } from "./roles";
 import { active_games } from "./state";
-
+import notifyRole, {roles, Role} from "./roles";
 const EventEmitter = require('events');
 
 function shuffle(array: any[]) {
@@ -31,6 +30,7 @@ const quest_sheet = {
 	10: [3, 4, 4, 5, 5]
 }
 
+const {Loyal, Evil, Merlin, Assassin, Percival, Mordred, Morgana, Oberon} = roles;
 class Game {
     private _playerList: Player[];
     private _teamLeader: Player;
@@ -98,9 +98,9 @@ class Game {
         const evilRoles = host.activeSpecialRoles.get('evil') as string[];
         const playerList = [];
         while (loyalRoles.length < numberOfLoyal)
-            loyalRoles.push(LOYAL);
+            loyalRoles.push(Loyal);
         while (evilRoles.length < numberOfEvil)
-            evilRoles.push(EVIL);
+            evilRoles.push(Evil);
         const allRoles = shuffle(loyalRoles.concat(evilRoles));
         for (let i in host.userList) {
             playerList.push(new Player(host.userList[i], allRoles[i], `${i}\u20E3`));
@@ -109,33 +109,33 @@ class Game {
     }
 
     private async notifyRoles(channel: TextBasedChannel) {
-        try {	
+    try {	
         for (let player of this._playerList) {
 		console.log(player);
             switch (player.role) {
-                case MERLIN:
-                    await merlin(player, this._playerList);
+                case Merlin:
+                    await notifyRole(player, this._playerList, [Evil, Assassin, Morgana, Oberon]);
                     break;
-                case LOYAL:
-                    await loyal(player);
+                case Loyal:
+                    await notifyRole(player, this._playerList);
                     break;
-                case EVIL:
-                    await evil(player, this._playerList);
+                case Evil:
+                    await notifyRole(player, this._playerList, [Evil, Assassin, Mordred, Morgana]);
                     break;
-                case PERCIVAL:
-                    await percival(player, this._playerList);
+                case Percival:
+                    await notifyRole(player, this._playerList, [Merlin, Morgana]);
                     break;
-                case MORDRED:
-                    await mordred(player, this._playerList);
+                case Mordred:
+                    await notifyRole(player, this._playerList, [Evil, Assassin, Morgana]);
                     break;
-                case MORGANA:
-                    await morgana(player, this._playerList);
+                case Morgana:
+                    await notifyRole(player, this._playerList, [Evil, Assassin, Mordred]);
                     break;
-                case OBERON:
-                    await oberon(player);
+                case Oberon:
+                    await notifyRole(player, this._playerList);
                     break;
-                case ASSASSIN:
-                    await assassin(player, this._playerList);
+                case Assassin:
+                    await notifyRole(player, this._playerList, [Evil, Mordred, Morgana]);
             }
         }
     }
@@ -153,13 +153,13 @@ class Game {
         const validEmoticons : string[] = [];
         let stringOfemoticonOfPlayers = "";
         for (let player of this._playerList) {
-            if (![ASSASSIN, EVIL, MORDRED, MORGANA].includes(player.role)) {
+            if (!([Assassin, Evil, Mordred, Morgana] as Role[]).includes(player.role)) {
                 stringOfemoticonOfPlayers += `${player.emoticon}: ${player.user.username}\n`;
                 validEmoticons.push(player.emoticon);
             }
         }
         for (let player of this._playerList) {
-            if (player.role === ASSASSIN) {
+            if (player.role === Assassin) {
                 const embed = new MessageEmbed()
                 .setTitle('이제 멀린을 암살할 시간입니다.')
                 .setDescription(`${player.user.username}님은 멀린이라고 생각되는 플레이어를 한 명 지목해주세요.`)
@@ -176,7 +176,7 @@ class Game {
                 collector.on('collect', (reaction: MessageReaction, user: User) => {
                     for (let target of this._playerList) {
                         if (target.emoticon === reaction.emoji.name) {
-                            const description = target.role === MERLIN ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
+                            const description = target.role === Merlin ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
                             this.revealResult(description);
                             break;
                         }

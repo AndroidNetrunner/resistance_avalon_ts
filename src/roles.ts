@@ -1,136 +1,119 @@
 import { MessageEmbed } from "discord.js";
 import Player from "./Player";
+export const roles = {
+    Loyal: "선의 세력",
+    Evil: "악의 하수인",
+    Merlin: "멀린",
+    Assassin: "암살자",
+    Percival: "퍼시발",
+    Mordred: "모드레드",
+    Morgana: "모르가나",
+    Oberon: "오베론",
+} as const;
 
-export const LOYAL = "선의 세력";
-export const EVIL = "악의 하수인";
-export const MERLIN = "멀린";
-export const ASSASSIN = "암살자";
-export const PERCIVAL = "퍼시발";
-export const MORDRED = "모드레드";
-export const MORGANA = "모르가나";
-export const OBERON = "오베론";
+export type Role = typeof roles[keyof typeof roles];
 
-export async function merlin(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if (roles.evil.includes(opponent.role) && opponent.role !== MORDRED)
-            visiblePlayers.push(opponent.user.username);
+class UnknownRoleError extends Error {
+    constructor(msg: string) {
+        super(msg);
     }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 멀린입니다.')
-    .setDescription('모드레드를 제외한 악의 하수인들을 알 수 있지만,\n당신이 암살당한다면 선의 세력은 패배합니다!')
-    .setColor('BLUE')
-    .setFields({
-        name: '당신의 눈에 보이는 악의 세력은...',
-        value: `${visiblePlayers.join()}입니다!`
+}
+
+interface content {
+    role: string,
+    description: string,
+    fieldName: string,
+    fieldValue: string
+}
+
+export const team: {loyal: Role[], evil: Role[]} = {
+    loyal: [roles.Merlin, roles.Percival, roles.Loyal],
+    evil: [roles.Assassin, roles.Mordred, roles.Morgana, roles.Oberon, roles.Evil]
+}
+
+
+const notifyRole = async (player: Player, playerList: Player[], visibleRole?: Role[]) : Promise<void> => {
+    const embed = makeEmbed(player, playerList, visibleRole);
+    await player.user.send({
+        embeds: [embed]
     })
-    await player.user.send({embeds:[embed]});
 }
 
-export async function loyal(player: Player) {
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 선의 세력입니다.')
-    .setDescription('다른 선의 세력을 파악해 미션을 성공시켜 게임에서 승리하세요!')
-    .setColor('BLUE');
-    await player.user.send({embeds:[embed]});
+const makeEmbed = (
+    player: Player,
+    playerList: Player[],
+    visibleRole?: Role[]
+    ) => {
+        const visiblePlayers = visibleRole && playerList.filter(opponent => player !== opponent && opponent.role in visibleRole).map(opponent => opponent.user.username);
+        const content = makeEmbedContent(player.role, visiblePlayers?.join());
+        return new MessageEmbed()
+        .setTitle(`당신의 역할은 ${content.role}입니다.`)
+        .setDescription(content.description)
+        .setColor(content.role in team.loyal ? "BLUE" : "RED")
+        .addField(content.fieldName, content.fieldValue);
 }
 
-export async function evil(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
-            visiblePlayers.push(opponent.user.username);
-    }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 악의 하수인입니다.')
-    .setDescription('선의 세력을 속여 미션을 실패시키면 게임에서 승리합니다!')
-    .setColor('RED')
-    .setFields({
-        name: '당신의 눈에 보이는 악의 세력은...',
-        value: `${visiblePlayers.join()}입니다!`
-    });
-    await player.user.send({embeds: [embed]});
+const makeEmbedContent = (role: Role, visiblePlayers?: string) : content => {
+    switch (role) {
+        case roles.Merlin:
+            return {
+                role: roles.Merlin,
+                description: '모드레드를 제외한 악의 하수인들을 알 수 있지만,\n당신이 암살당한다면 선의 세력은 패배합니다!',
+                fieldName: '당신의 눈에 보이는 악의 세력은...',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Loyal:
+            return {
+                role: roles.Loyal,
+                description: "다른 선의 세력을 파악해 미션을 성공시켜 게임에서 승리하세요!",
+                fieldName: "",
+                fieldValue: ""
+            }
+        case roles.Evil: 
+            return {
+                role: roles.Evil,
+                description: "선의 세력을 속여 미션을 실패시키면 게임에서 승리합니다!",
+                fieldName: '당신의 눈에 보이는 악의 세력은...',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Percival: 
+            return {
+                role: roles.Percival,
+                description: "멀린이 누구인지 알 수 있지만, 모르가나도 위장한 채 당신에게 보일 것입니다!",
+                fieldName: '당신의 눈에 보이는 멀린 후보는...',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Assassin: 
+            return {
+                role: roles.Assassin,
+                description: "악의 하수인이 패배하기 직전, 멀린 암살에 성공한다면 악의 세력은 역전승합니다!",
+                fieldName: '당신의 눈에 보이는 악의 세력은...',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Mordred:
+            return {
+                role: roles.Mordred,
+                description: "당신은 악의 하수인이지만, 멀린에게 정체가 보이지 않습니다!",
+                fieldName: '당신의 눈에 보이는 악의 세력은...',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Morgana: 
+            return {
+                role: roles.Morgana,
+                description: "퍼시발에게는 당신이 멀린으로 위장한 채 보입니다!",
+                fieldName: '당신의 눈에 보이는 악의 세력은,,,',
+                fieldValue: `${visiblePlayers}입니다!`
+            }
+        case roles.Oberon: 
+            return {
+                role: roles.Oberon,
+                description: "악의 하수인이지만, 다른 악의 하수인들과 정체를 서로 모릅니다.",
+                fieldName: "",
+                fieldValue: ""
+            }
+        default:
+            throw new UnknownRoleError('역할을 찾을 수 업습니다.');
+        }
 }
 
-export async function percival(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if ([MERLIN, MORGANA].includes(opponent.role))
-            visiblePlayers.push(opponent.user.username);
-    }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 퍼시발입니다.')
-    .setDescription('멀린이 누구인지 알 수 있지만, 모르가나도 위장한 채 당신에게 보일 것입니다!')
-    .setColor('BLUE')
-    .setFields({
-        name: '당신의 눈에 보이는 멀린 후보는...',
-        value: `${visiblePlayers.join()}입니다!`
-    });
-    await player.user.send({embeds: [embed]});
-}
-
-export async function assassin(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
-            visiblePlayers.push(opponent.user.username);
-    }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 암살자입니다.')
-    .setDescription('악의 하수인이 패배하기 직전, 멀린 암살에 성공한다면 악의 세력은 역전승합니다!')
-    .setColor('RED')
-    .setFields({
-        name: '당신의 눈에 보이는 악의 세력은...',
-        value: `${visiblePlayers.join()}입니다!`
-    });
-    await player.user.send({embeds: [embed]});
-}
-
-export async function mordred(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
-            visiblePlayers.push(opponent.user.username);
-    }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 모드레드입니다.')
-    .setDescription('당신은 악의 하수인이지만, 멀린에게 정체가 보이지 않습니다!')
-    .setColor('RED')
-    .setFields({
-        name: '당신의 눈에 보이는 악의 세력은...',
-        value: `${visiblePlayers.join()}입니다!`
-    });
-    await player.user.send({embeds: [embed]});
-}
-
-export async function morgana(player: Player, playerList: Player[]) {
-    const visiblePlayers = [];
-    for (let opponent of playerList) {
-        if (opponent !== player && roles.evil.includes(opponent.role) && opponent.role !== OBERON)
-            visiblePlayers.push(opponent.user.username);
-    }
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 모르가나입니다.')
-    .setDescription('퍼시발에게는 당신이 멀린으로 위장한 채 보입니다!')
-    .setColor('RED')
-    .setFields({
-        name: '당신의 눈에 보이는 악의 세력은...',
-        value: `${visiblePlayers.join()}입니다!`
-    });
-    await player.user.send({embeds:[embed]});
-}
-
-export async function oberon(player: Player) {
-    const embed = new MessageEmbed()
-    .setTitle('당신의 역할은 오베론입니다.')
-    .setDescription('악의 하수인이지만, 다른 악의 하수인들과 정체를 서로 모릅니다.')
-    .setColor('RED');
-    await player.user.send({embeds: [embed]});
-}
-
-const roles = {
-    loyal: [MERLIN, PERCIVAL, LOYAL],
-    evil: [ASSASSIN, MORDRED, MORGANA, OBERON, EVIL]
-}
-
-export default roles;
+export default notifyRole;

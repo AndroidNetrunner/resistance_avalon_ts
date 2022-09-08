@@ -1,6 +1,6 @@
 import { Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction, TextBasedChannel, User } from "discord.js";
 import Player from "./Player";
-import roles from "./roles";
+import { team } from "./roles";
 
 function addAgreeAndDisagreeButtons() {
     const actionRow = new MessageActionRow();
@@ -84,7 +84,7 @@ class Dealer {
             .setStyle('DANGER')
             .setLabel('미션 실패')
             .setCustomId('fail')
-            .setDisabled(!roles.evil.includes(player.role))]
+            .setDisabled(!team.evil.includes(player.role))]
         )
         for (let player of this.proposedTeam) {
             const message = await player.user.send({embeds: [embed], components: [buttons(player)]});

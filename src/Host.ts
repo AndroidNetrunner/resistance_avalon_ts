@@ -1,5 +1,5 @@
 import { Channel, TextBasedChannel, User } from "discord.js";
-import roles, { ASSASSIN, MERLIN } from "./roles";
+import { team, Role, roles } from "./roles";
 
 class Host {
      userList: User[];
@@ -22,25 +22,25 @@ class Host {
         this.userList = [user];
         this._channelStartedGame = channelStartedGame;
         this._activeSpecialRoles = new Map();
-        this._activeSpecialRoles.set('loyal', [MERLIN]);
-        this._activeSpecialRoles.set('evil', [ASSASSIN]);
+        this._activeSpecialRoles.set('loyal', [roles.Merlin]);
+        this._activeSpecialRoles.set('evil', [roles.Assassin]);
     }
     addNewPlayerToPlayerList(user: User) {
         this.userList.push(user);
     }
-    addSpecialRole(role: string) {
-        if (!(roles.loyal.includes(role) || roles.evil.includes(role)))
+    addSpecialRole(role: Role) {
+        if (!(team.loyal.includes(role) || team.evil.includes(role)))
             return `${role}은(는) 존재하지 않는 역할입니다.`;
         if (this._activeSpecialRoles.get('loyal')?.includes(role) || this._activeSpecialRoles.get('evil')?.includes(role))
             return `${role}은(는) 이미 추가된 역할입니다.`;
-        if (roles.loyal.includes(role))
+        if (team.loyal.includes(role))
             this._activeSpecialRoles.get('loyal')?.push(role);
         else
             this._activeSpecialRoles.get('evil')?.push(role);
         return `${role}이(가) 게임에 추가되었습니다.`;
     }
-    removeSpecialRole(role: string) {
-        if (!(roles.loyal.includes(role) || roles.evil.includes(role)))
+    removeSpecialRole(role: Role) {
+        if (!(team.loyal.includes(role) || team.evil.includes(role)))
             return `${role}은(는) 존재하지 않는 역할입니다.`;
         if (this._activeSpecialRoles.get('evil')?.includes(role)) {
             const index = this._activeSpecialRoles.get('evil')?.indexOf(role);
