@@ -53,8 +53,8 @@ class Dealer {
                 components: [addAgreeAndDisagreeButtons()]
             });
             message.createMessageComponentCollector({max: 1})
-                .on('collect', i => {
-                    if (i.customId === 'agree') {
+                .on('collect', interaction => {
+                    if (interaction.customId === 'agree') {
                         this.playerAgreed.push(player);
                         player.user.send(`찬성에 투표하셨습니다.`);
                     }

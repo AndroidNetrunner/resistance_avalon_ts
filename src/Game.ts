@@ -1,4 +1,4 @@
-import { MessageEmbed, MessageReaction, TextBasedChannel, User } from "discord.js";
+import { MessageActionRow, MessageButton, MessageEmbed, MessageComponentInteraction, TextBasedChannel, User } from "discord.js";
 import Dealer from "./Dealer";
 import Host from "./Host";
 import Player from "./Player";
@@ -124,54 +124,42 @@ class Game {
         return new Dealer(this._missionBoard[this._roundNumber - 1], this._teamLeader, this._playerList, this._channelStartedGame, this._roundNumber, this._emitter);
     }
     private async notifyAssassinationToAssassin() {
-        const validEmoticons : string[] = [];
-        let stringOfemoticonOfPlayers = "";
-        for (let player of this._playerList) {
-            if (!(player.role in [Assassin, Evil, Mordred, Morgana])) {
-                stringOfemoticonOfPlayers += `${player.emoticon}: ${player.user.username}\n`;
-                validEmoticons.push(player.emoticon);
-            }
-        }
-        for (let player of this._playerList) {
-            if (player.role === Assassin) {
-                const embed = new MessageEmbed()
-                .setTitle('이제 멀린을 암살할 시간입니다.')
-                .setDescription(`${player.user.username}님은 멀린이라고 생각되는 플레이어를 한 명 지목해주세요.`)
-                .setFields({
-                    name: '각 이모티콘이 의미하는 플레이어는 다음과 같습니다.',
-                    value: stringOfemoticonOfPlayers
-                });
-                const assassin = player;
-                const message = await this._channelStartedGame.send({embeds: [embed]});
-                for (let emoticon of validEmoticons)
-                    message.react(emoticon);
-                const filter = (reaction: MessageReaction, user: User) => user.id === assassin.user.id && validEmoticons.includes(reaction.emoji.name as string);
-                const collector = message.createReactionCollector({ filter: filter })
-                collector.on('collect', (reaction: MessageReaction, user: User) => {
-                    for (let target of this._playerList) {
-                        if (target.emoticon === reaction.emoji.name) {
-                            const description = target.role === Merlin ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
-                            this.revealResult(description);
-                            break;
-                        }
-                    }
-                });
-                break;
-            }
-        }
+        const validMerlinCandidates : Player[] = this._playerList
+                                            .filter(player => !(player.role in [Assassin, Evil, Mordred, Morgana]));
+        const assassin = this._playerList.find(player => player.role === Assassin);
+        if (!assassin)
+            throw new Error('No Assassin Error');
+        const embed = new MessageEmbed()
+        .setTitle('이제 멀린을 암살할 시간입니다.')
+        .setDescription(`${assassin.user.username}님은 멀린이라고 생각되는 플레이어를 한 명 지목해주세요.`)
+        .setFields({
+            name: '각 이모티콘이 의미하는 플레이어는 다음과 같습니다.',
+            value: validMerlinCandidates.map(player => `${player.emoticon}: ${player.user.username}\n`).join()
+        });
+        const candidateButtons = new MessageActionRow()
+        .addComponents(
+            validMerlinCandidates.map(player => 
+                new MessageButton()
+                .setStyle('SECONDARY')
+                .setLabel(player.user.username)
+                .setCustomId(player.role))
+        );
+        const message = await this._channelStartedGame.send({embeds: [embed], components: [candidateButtons]});
+        const filter = (interaction: MessageComponentInteraction) => interaction.user.id === assassin.user.id;
+        message.awaitMessageComponent({filter}).then(i => {
+            const description = i.customId === Merlin ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
+            this.revealResult(description);
+        })
     }
     private revealResult(description: string) {
-        let stringOfRoleOfPlayers = "";
-        for (let player of this._playerList)
-            stringOfRoleOfPlayers += `${player.user.username}: ${player.role}\n`;
         const embed = new MessageEmbed()
         .setTitle('게임이 모두 종료되었습니다!')
         .setDescription(description)
         .setFields({
             name: '각 플레이어의 직업은 다음과 같습니다.',
-            value: stringOfRoleOfPlayers
+            value: this._playerList.map(player => `${player.user.username} : ${player.role}\n`).join()
         })
-        .setColor(description === "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리" ? "BLUE" : "RED");
+        .setColor(description.includes("선의 세력 승리") ? "BLUE" : "RED");
         this._channelStartedGame.send({embeds: [embed]});
         active_games.delete(this._channelStartedGame.id);
     }
