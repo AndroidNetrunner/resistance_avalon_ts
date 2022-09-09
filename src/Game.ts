@@ -3,7 +3,7 @@ import Dealer from "./Dealer";
 import Host from "./Host";
 import Player from "./Player";
 import { active_games } from "./state";
-import notifyRole, {roles, Role} from "./roles";
+import notifyRoleToPlayer, { roles } from "./roles";
 const EventEmitter = require('events');
 
 function shuffle(array: any[]) {
@@ -31,6 +31,7 @@ const quest_sheet = {
 }
 
 const {Loyal, Evil, Merlin, Assassin, Percival, Mordred, Morgana, Oberon} = roles;
+
 class Game {
     private _playerList: Player[];
     private _teamLeader: Player;
@@ -53,7 +54,7 @@ class Game {
         this._loyalScore = 0;
         this._evilScore = 0;
         this.startNewGame(host.activeSpecialRoles);
-        this.notifyRoles(host.channelStartedGame);
+        this.notifyRolesToPlayers(host.channelStartedGame);
         this._emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
             this._roundNumber += 1;
             missionSuccess ? this._loyalScore += 1 : this._evilScore += 1;
@@ -108,43 +109,16 @@ class Game {
         return playerList;
     }
 
-    private async notifyRoles(channel: TextBasedChannel) {
-    try {	
-        for (let player of this._playerList) {
-		console.log(player);
-            switch (player.role) {
-                case Merlin:
-                    await notifyRole(player, this._playerList, [Evil, Assassin, Morgana, Oberon]);
-                    break;
-                case Loyal:
-                    await notifyRole(player, this._playerList);
-                    break;
-                case Evil:
-                    await notifyRole(player, this._playerList, [Evil, Assassin, Mordred, Morgana]);
-                    break;
-                case Percival:
-                    await notifyRole(player, this._playerList, [Merlin, Morgana]);
-                    break;
-                case Mordred:
-                    await notifyRole(player, this._playerList, [Evil, Assassin, Morgana]);
-                    break;
-                case Morgana:
-                    await notifyRole(player, this._playerList, [Evil, Assassin, Mordred]);
-                    break;
-                case Oberon:
-                    await notifyRole(player, this._playerList);
-                    break;
-                case Assassin:
-                    await notifyRole(player, this._playerList, [Evil, Mordred, Morgana]);
-            }
+    private async notifyRolesToPlayers(channel: TextBasedChannel) {
+        try {	
+            this._playerList.forEach(async (player: Player) => await notifyRoleToPlayer(player, this._playerList));    
         }
-    }
-    catch (error) {
-        channel.send(
-            `앗! 누군가가 봇에게 DM 발송 권한을 주지 않아 DM 발송에 실패했습니다. 
-            설정 -> 개인정보 보호 및 보안 -> "서버 멤버가 보내는 다이렉트 메세지 허용하기"가 켜져있는지 확인해주세요!
-            모든 플레이어가 허용한 후, /리셋을 입력해 게임을 초기화할 수 있습니다.`);
-    }
+        catch (error) {
+            channel.send(
+                `앗! 누군가가 봇에게 DM 발송 권한을 주지 않아 DM 발송에 실패했습니다. 
+                설정 -> 개인정보 보호 및 보안 -> "서버 멤버가 보내는 다이렉트 메세지 허용하기"가 켜져있는지 확인해주세요!
+                모든 플레이어가 허용한 후, /리셋을 입력해 게임을 초기화할 수 있습니다.`);
+        }
     }
     private startNewRound() {
         return new Dealer(this._missionBoard[this._roundNumber - 1], this._teamLeader, this._playerList, this._channelStartedGame, this._roundNumber, this._emitter);
@@ -153,7 +127,7 @@ class Game {
         const validEmoticons : string[] = [];
         let stringOfemoticonOfPlayers = "";
         for (let player of this._playerList) {
-            if (!([Assassin, Evil, Mordred, Morgana] as Role[]).includes(player.role)) {
+            if (!(player.role in [Assassin, Evil, Mordred, Morgana])) {
                 stringOfemoticonOfPlayers += `${player.emoticon}: ${player.user.username}\n`;
                 validEmoticons.push(player.emoticon);
             }

@@ -26,13 +26,25 @@ interface content {
     fieldValue: string
 }
 
+export const RolesSeenToSpecialRole = {
+    [roles.Merlin]: [roles.Evil, roles.Assassin, roles.Morgana, roles.Oberon],
+    [roles.Evil]: [roles.Evil, roles.Assassin, roles.Mordred, roles.Morgana],
+    [roles.Percival]: [roles.Merlin, roles.Morgana],
+    [roles.Mordred]: [roles.Evil, roles.Assassin, roles.Morgana],
+    [roles.Morgana]: [roles.Evil, roles.Assassin, roles.Mordred],
+    [roles.Assassin]: [roles.Evil, roles.Mordred, roles.Morgana],
+    [roles.Loyal] : undefined,
+    [roles.Oberon] : undefined
+};
+
 export const team: {loyal: Role[], evil: Role[]} = {
     loyal: [roles.Merlin, roles.Percival, roles.Loyal],
     evil: [roles.Assassin, roles.Mordred, roles.Morgana, roles.Oberon, roles.Evil]
 }
 
 
-const notifyRole = async (player: Player, playerList: Player[], visibleRole?: Role[]) : Promise<void> => {
+const notifyRoleToPlayer = async (player: Player, playerList: Player[]) : Promise<void> => {
+    const visibleRole = RolesSeenToSpecialRole[player.role];
     const embed = makeEmbed(player, playerList, visibleRole);
     await player.user.send({
         embeds: [embed]
@@ -116,4 +128,4 @@ const makeEmbedContent = (role: Role, visiblePlayers?: string) : content => {
         }
 }
 
-export default notifyRole;
+export default notifyRoleToPlayer;
