@@ -43,10 +43,8 @@ class Dealer {
         const embed = new MessageEmbed()
             .setTitle(`${this.teamLeader.user.username}님이 ${this.roundNumber}라운드 ${this.rejectedTeams + 1}번째 원정대를 제안하였습니다.`)
             .setDescription(`아래 버튼을 눌러 찬성 혹은 반대를 투표해주세요.`)
-            .setFields({
-                name: `원정대에 소속된 플레이어들은...`,
-                value: `${this.proposedTeam.map(player => player.user.username).join()} 입니다!`
-            });
+            .addField(`원정대에 소속된 플레이어들은...`,
+            `${this.proposedTeam.map(player => player.user.username).join()} 입니다!`);
         for (let player of this.playerList) {
             const message = await player.user.send({
                 embeds: [embed],
@@ -122,7 +120,7 @@ class Dealer {
         embed.setFields(fields);
         this.channelStartedGame.send({ embeds: [embed] });
         if (this.rejectedTeams === 5)
-            this.emitter.emit(`gameEnd`);
+            this.emitter.emit(`gameEnd`, '5연속 원정대 부결로 인한 악의 하수인 승리');
         else if (this.playerAgreed.length <= this.playerDisagreed.length)
             this.notifyTurnToTeamLeader();
     }

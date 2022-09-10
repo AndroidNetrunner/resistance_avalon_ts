@@ -2,7 +2,7 @@ import { Channel, TextBasedChannel, User } from "discord.js";
 import { team, Role, roles } from "./roles";
 
 class Host {
-     userList: User[];
+    userList: User[];
     private _activeSpecialRoles: Map<string, string[]>;
     private _channelStartedGame: TextBasedChannel;
 
@@ -31,28 +31,35 @@ class Host {
     addSpecialRole(role: Role) {
         if (!(team.loyal.includes(role) || team.evil.includes(role)))
             return `${role}은(는) 존재하지 않는 역할입니다.`;
-        if (this._activeSpecialRoles.get('loyal')?.includes(role) || this._activeSpecialRoles.get('evil')?.includes(role))
+        if ((Object.values(this.activeSpecialRoles).includes(role)))
             return `${role}은(는) 이미 추가된 역할입니다.`;
-        if (team.loyal.includes(role))
-            this._activeSpecialRoles.get('loyal')?.push(role);
-        else
-            this._activeSpecialRoles.get('evil')?.push(role);
+        this.addRoleToActiveSpecialRoles(role);
         return `${role}이(가) 게임에 추가되었습니다.`;
     }
     removeSpecialRole(role: Role) {
         if (!(team.loyal.includes(role) || team.evil.includes(role)))
-            return `${role}은(는) 존재하지 않는 역할입니다.`;
-        if (this._activeSpecialRoles.get('evil')?.includes(role)) {
-            const index = this._activeSpecialRoles.get('evil')?.indexOf(role);
-            this._activeSpecialRoles.get('evil')?.splice(index as number, 1);
-        }
-        else if (this._activeSpecialRoles.get('loyal')?.includes(role)) {
-            const index = this._activeSpecialRoles.get('loyal')?.indexOf(role);
-            this._activeSpecialRoles.get('loyal')?.splice(index as number, 1);
-        }
-        else
-            return `${role}은(는) 추가되지 않은 역할입니다.`;
+            return `${role}은(는) 게임에 존재하지 않는 역할입니다.`;
+        if (!(Object.values(this.activeSpecialRoles).includes(role)))
+            return `${role}은 추가되지 않은 역할입니다.`;
+        this.removeRoleFromActiveSpecialRoles(role);
         return `${role}이(가) 게임에서 삭제되었습니다.`;
+    }
+
+    private addRoleToActiveSpecialRoles(targetRole: Role) {
+        for (let team in this.activeSpecialRoles) 
+        {
+            const teamArray = this.activeSpecialRoles.get(team);
+            if (teamArray && teamArray.includes(targetRole))
+                teamArray.push(targetRole);
+        }
+    }
+
+    private removeRoleFromActiveSpecialRoles(targetRole: Role) {
+        for (let team in this.activeSpecialRoles) {
+            const teamArray = this._activeSpecialRoles.get(team)?.filter(activeRole => activeRole !== targetRole);
+            if (teamArray)
+                this._activeSpecialRoles.set(team, teamArray);
+        }
     }
 }
 

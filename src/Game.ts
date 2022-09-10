@@ -33,19 +33,33 @@ const quest_sheet = {
 const {Loyal, Evil, Merlin, Assassin, Percival, Mordred, Morgana, Oberon} = roles;
 
 class Game {
-    private _playerList: Player[];
-    private _teamLeader: Player;
-    private _channelStartedGame: TextBasedChannel;
-    private _missionBoard: number[];
-    private _roundNumber: number;
+    private _playerList!: Player[];
+    private _teamLeader!: Player;
+    private _channelStartedGame!: TextBasedChannel;
+    private _missionBoard!: number[];
+    private _roundNumber!: number;
     private _emitter: any = new EventEmitter();
-    private _loyalScore: number;
-    private _evilScore: number;
+    private _loyalScore!: number;
+    private _evilScore!: number;
 
     get playerList() {
         return this._playerList.map(player => player.user.username);
     }
+
+    get emitter() {
+        return this._emitter;
+    }
+
     constructor(host: Host) {
+        this.setInitialState(host);
+        this.readyNewGame(host.activeSpecialRoles);
+        this.notifyRolesToPlayers(host.channelStartedGame);
+        this.startNewRound();
+        this.setRoundEndEmitter();
+        this.setGameEndEmitter();
+    };
+
+    private setInitialState(host: Host) {
         this._playerList = this.setPlayerList(host);
         this._channelStartedGame = host.channelStartedGame;
         this._missionBoard = quest_sheet[this._playerList.length as 5 | 6 | 7 | 8 | 9 | 10];
@@ -53,30 +67,9 @@ class Game {
         this._teamLeader = this._playerList[Math.floor(Math.random() * this._playerList.length)];
         this._loyalScore = 0;
         this._evilScore = 0;
-        this.startNewGame(host.activeSpecialRoles);
-        this.notifyRolesToPlayers(host.channelStartedGame);
-        this._emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
-            this._roundNumber += 1;
-            missionSuccess ? this._loyalScore += 1 : this._evilScore += 1;
-            this._teamLeader = newTeamLeader;
-            if (this._loyalScore === 3 || this._evilScore === 3) {
-                if (this._loyalScore === 3)
-                    this.notifyAssassinationToAssassin();
-                else
-                    this.revealResult('3번의 미션 실패로 인한 악의 하수인 승리');
-            }
-            else {
-                const embed = new MessageEmbed()
-                .setTitle('현재까지 각 진영의 득점 상황은 다음과 같습니다.')
-                .setDescription(`선의 세력: ${this._loyalScore}, 악의 하수인: ${this._evilScore}`);
-                this._channelStartedGame.send({embeds: [embed]});
-                this.startNewRound();
-            }
-        });
-        this._emitter.on('gameEnd', () => this.revealResult('5연속 원정대 부결로 인한 악의 하수인 승리'));
-    };
+    }
 
-    private startNewGame(specialRoles: Map<string, string[]>): void {
+    private readyNewGame(specialRoles: Map<string, string[]>): void {
         const embed = new MessageEmbed()
         .setTitle('게임이 시작되었습니다!')
         .setDescription(`사용 직업: ${specialRoles.get('loyal')?.concat(specialRoles.get('evil') as string[]).join()}`)
@@ -89,7 +82,6 @@ class Game {
                     5라운드: ${this._missionBoard[4]}`
         });
         this._channelStartedGame.send({embeds: [embed]});
-        this.startNewRound();
     }
 
     private setPlayerList(host: Host): Player[] {
@@ -109,6 +101,28 @@ class Game {
         return playerList;
     }
 
+    private setRoundEndEmitter() {
+        this.emitter.on('roundEnd', (missionSuccess: boolean, newTeamLeader: Player) => {
+            this._roundNumber += 1;
+            missionSuccess ? this._loyalScore += 1 : this._evilScore += 1;
+            this._teamLeader = newTeamLeader;
+            if (this._loyalScore === 3)
+                this.notifyAssassinationToAssassin();
+            else if (this._evilScore === 3)
+                this.emitter.emit('gameEnd', '3번의 미션 실패로 인한 악의 하수인 승리');
+            else {
+                const embed = new MessageEmbed()
+                .setTitle('현재까지 각 진영의 득점 상황은 다음과 같습니다.')
+                .setDescription(`선의 세력: ${this._loyalScore}, 악의 하수인: ${this._evilScore}`);
+                this._channelStartedGame.send({embeds: [embed]});
+                this.startNewRound();
+            }
+        });
+    };
+
+    private setGameEndEmitter() {
+        this.emitter.on('gameEnd', (description: string) => this.revealResult(description));
+    }
     private async notifyRolesToPlayers(channel: TextBasedChannel) {
         try {	
             this._playerList.forEach(async (player: Player) => await notifyRoleToPlayer(player, this._playerList));    
@@ -121,7 +135,7 @@ class Game {
         }
     }
     private startNewRound() {
-        return new Dealer(this._missionBoard[this._roundNumber - 1], this._teamLeader, this._playerList, this._channelStartedGame, this._roundNumber, this._emitter);
+        return new Dealer(this._missionBoard[this._roundNumber - 1], this._teamLeader, this._playerList, this._channelStartedGame, this._roundNumber, this.emitter);
     }
     private async notifyAssassinationToAssassin() {
         const validMerlinCandidates : Player[] = this._playerList
@@ -148,7 +162,7 @@ class Game {
         const filter = (interaction: MessageComponentInteraction) => interaction.user.id === assassin.user.id;
         message.awaitMessageComponent({filter}).then(i => {
             const description = i.customId === Merlin ? "멀린 암살 성공으로 인한 악의 하수인 승리" : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
-            this.revealResult(description);
+            this.emitter('gameEnd', description);
         })
     }
     private revealResult(description: string) {
