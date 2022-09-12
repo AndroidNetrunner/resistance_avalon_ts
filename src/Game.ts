@@ -89,16 +89,12 @@ class Game {
         const numberOfEvil = host.userList.length - numberOfLoyal;
         const loyalRoles = host.activeSpecialRoles.get('loyal') as string[];
         const evilRoles = host.activeSpecialRoles.get('evil') as string[];
-        const playerList = [];
         while (loyalRoles.length < numberOfLoyal)
             loyalRoles.push(Loyal);
         while (evilRoles.length < numberOfEvil)
             evilRoles.push(Evil);
         const allRoles = shuffle(loyalRoles.concat(evilRoles));
-        for (let i in host.userList) {
-            playerList.push(new Player(host.userList[i], allRoles[i], `${i}\u20E3`));
-            }
-        return playerList;
+        return host.userList.map((user, index) => new Player(user, allRoles[index], `${index}\u20E3`));
     }
 
     private setRoundEndEmitter() {
