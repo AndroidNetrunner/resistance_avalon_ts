@@ -209,8 +209,6 @@ class Dealer {
         .createMessageComponentCollector({ max: 1 })
         .on("collect", (interaction) => {
           this[interaction.customId as "missionSuccess" | "missionFail"] += 1;
-          console.log(this._missionSuccess);
-          console.log(this._missionFail);
           interaction.user.send(
             `${
               interaction.customId === "missionSuccess"
@@ -335,7 +333,6 @@ class Dealer {
   }
   private notifyVoteSaved(interaction: MessageComponentInteraction) {
     this[interaction.customId as "agree" | "disagree"] = interaction.user;
-    console.log(this._playersAgreed.length);
     interaction.user.send(
       `${interaction.customId === "agree" ? "찬성" : "반대"}에 투표하셨습니다.`
     );

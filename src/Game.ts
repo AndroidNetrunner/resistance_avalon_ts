@@ -191,17 +191,35 @@ class Game {
           .map((player) => `${player.user.username}`)
           .join(),
       });
-    const candidateButtons = new MessageActionRow().addComponents(
-      validMerlinCandidates.map((player) =>
-        new MessageButton()
-          .setStyle("SECONDARY")
-          .setLabel(player.user.username)
-          .setCustomId(player.role)
-      )
-    );
+    const candidateButtons = [
+      new MessageActionRow().addComponents(
+        ...validMerlinCandidates
+          .slice(0, 5)
+          .map((player) =>
+            new MessageButton()
+              .setStyle("SECONDARY")
+              .setLabel(player.user.username)
+              .setCustomId(player.role)
+          )
+      ),
+    ];
+    if (validMerlinCandidates.length > 5)
+      candidateButtons.concat(
+        new MessageActionRow().addComponents(
+          ...validMerlinCandidates
+            .slice(5)
+            .map((player) =>
+              new MessageButton()
+                .setStyle("SECONDARY")
+                .setLabel(player.user.username)
+                .setCustomId(player.role)
+            )
+        )
+      );
+
     const message = await this._channelStartedGame.send({
       embeds: [embed],
-      components: [candidateButtons],
+      components: candidateButtons,
     });
     const filter = (interaction: MessageComponentInteraction) =>
       interaction.user.id === assassin.user.id;
