@@ -204,7 +204,7 @@ class Game {
       ),
     ];
     if (validMerlinCandidates.length > 5)
-      candidateButtons.concat(
+      candidateButtons.concat([
         new MessageActionRow().addComponents(
           ...validMerlinCandidates
             .slice(5)
@@ -214,8 +214,8 @@ class Game {
                 .setLabel(player.user.username)
                 .setCustomId(player.role)
             )
-        )
-      );
+        ),
+      ]);
 
     const message = await this._channelStartedGame.send({
       embeds: [embed],
