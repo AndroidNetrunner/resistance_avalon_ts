@@ -223,9 +223,10 @@ class Game {
     });
     const filter = (interaction: MessageComponentInteraction) =>
       interaction.user.id === assassin.user.id;
-    message.awaitMessageComponent({ filter }).then((i) => {
+    message.awaitMessageComponent({ filter }).then((interaction) => {
+      interaction.deferReply();
       const description =
-        i.customId === Merlin
+        interaction.customId === Merlin
           ? "멀린 암살 성공으로 인한 악의 하수인 승리"
           : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
       this.emitter.emit("gameEnd", description);
