@@ -223,8 +223,8 @@ class Game {
     });
     const filter = (interaction: MessageComponentInteraction) =>
       interaction.user.id === assassin.user.id;
-    message.awaitMessageComponent({ filter }).then((interaction) => {
-      interaction.deferReply();
+    message.awaitMessageComponent({ filter }).then(async (interaction) => {
+      await interaction.deferReply();
       const description =
         interaction.customId === Merlin
           ? "멀린 암살 성공으로 인한 악의 하수인 승리"

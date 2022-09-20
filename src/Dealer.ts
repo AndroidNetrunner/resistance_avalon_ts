@@ -207,8 +207,8 @@ class Dealer {
       });
       message
         .createMessageComponentCollector({ max: 1 })
-        .on("collect", (interaction) => {
-          interaction.deferReply();
+        .on("collect", async (interaction) => {
+          await interaction.deferReply();
           this[interaction.customId as "missionSuccess" | "missionFail"] += 1;
           interaction.user.send(
             `${
