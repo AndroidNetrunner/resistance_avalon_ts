@@ -15,7 +15,6 @@ const client = new DiscordJS.Client({
 
 client.login(process.env.TOKEN).then(() => {
   client.user?.setAvatar("resistance_avalon.jpg");
-  client.user?.setActivity("/명령어", { type: "PLAYING" });
 });
 
 client.on("ready", () => {
