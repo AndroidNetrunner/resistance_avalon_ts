@@ -62,6 +62,7 @@ class Game {
   }
 
   constructor(host: Host) {
+    console.log("new Game has been started", host);
     this.setInitialState(host);
     this.readyNewGame(host.activeSpecialRoles);
     this.notifyRolesToPlayers(host.channelStartedGame);
@@ -82,7 +83,9 @@ class Game {
     this._evilScore = 0;
   }
 
-  private readyNewGame(specialRoles: Map<string, string[]>): void {
+  private async readyNewGame(
+    specialRoles: Map<string, string[]>
+  ): Promise<void> {
     const embed = new MessageEmbed()
       .setTitle("게임이 시작되었습니다!")
       .setDescription(
@@ -99,7 +102,7 @@ class Game {
                     4라운드: ${this._missionBoard[3]}
                     5라운드: ${this._missionBoard[4]}`,
       });
-    this._channelStartedGame.send({ embeds: [embed] });
+    await this._channelStartedGame.send({ embeds: [embed] });
   }
 
   private setPlayerList(host: Host): Player[] {
