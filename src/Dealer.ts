@@ -173,9 +173,11 @@ class Dealer {
         message.delete();
         await this.startVote(this._teamLeader);
       });
+    console.log("sent message to leader");
   }
 
   private async startVote(player: Player) {
+    console.log("startVote");
     this._teamLeader = player;
     this._playerList.forEach((player: Player) =>
       this.sendVoteToPlayers(player)
@@ -226,6 +228,7 @@ class Dealer {
   }
 
   private revealVotes() {
+    console.log("revealVotes");
     const fields = [
       {
         name: "찬성",
@@ -273,6 +276,7 @@ class Dealer {
   }
 
   private revealMissionResult() {
+    console.log("revealing mission result");
     const description = this.isMissionSuccessful
       ? "원정대는 미션에 성공하였습니다!"
       : "아쉽게도 원정대는 미션에 실패하였습니다...";
