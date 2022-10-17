@@ -140,15 +140,17 @@ class Game {
             );
           this._channelStartedGame.send({ embeds: [embed] });
           this.startNewRound();
+          console.log(this._loyalScore, this._evilScore);
         }
       }
     );
   }
 
   private setGameEndEmitter() {
-    this.emitter.on("gameEnd", (description: string) =>
-      this.revealResult(description)
-    );
+    this.emitter.on("gameEnd", (description: string) => {
+      console.log("gameEnd");
+      this.revealResult(description);
+    });
   }
   private async notifyRolesToPlayers(channel: TextBasedChannel) {
     try {
@@ -239,7 +241,7 @@ class Game {
     const embed = new MessageEmbed()
       .setTitle("게임이 모두 종료되었습니다!")
       .setDescription(description)
-      .setFields({
+      .addFields({
         name: "각 플레이어의 직업은 다음과 같습니다.",
         value: this._playerList
           .map((player) => `${player.user.username} : ${player.role}`)
