@@ -29,8 +29,6 @@ class Host {
     this.userList.push(user);
   }
   addSpecialRole(role: Role) {
-    if (!(team.loyal.includes(role) || team.evil.includes(role)))
-      return `${role}은(는) 존재하지 않는 역할입니다.`;
     if (
       this._activeSpecialRoles.get("loyal")?.includes(role) ||
       this._activeSpecialRoles.get("evil")?.includes(role)

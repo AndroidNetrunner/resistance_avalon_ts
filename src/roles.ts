@@ -13,20 +13,8 @@ export const roles = {
 
 export type Role = typeof roles[keyof typeof roles];
 
-export const isValidRole = (param: string): param is Role => {
-  return (
-    param in
-    [
-      "선의 세력",
-      "악의 하수인",
-      "멀린",
-      "암살자",
-      "퍼시발",
-      "모드레드",
-      "모르가나",
-      "오베론",
-    ]
-  );
+export const isValidAdditionalRole = (param: string): param is Role => {
+  return ["퍼시발", "모드레드", "모르가나", "오베론"].includes(param);
 };
 
 class UnknownRoleError extends Error {
@@ -36,7 +24,7 @@ class UnknownRoleError extends Error {
 }
 
 interface content {
-  role: string;
+  role: Role;
   description: string;
   fieldName: string;
   fieldValue: string;
@@ -83,14 +71,18 @@ const makeEmbed = (
   const visiblePlayers =
     visibleRole &&
     playerList
-      .filter((opponent) => player !== opponent && opponent.role in visibleRole)
+      .filter(
+        (opponent) => player !== opponent && visibleRole.includes(opponent.role)
+      )
       .map((opponent) => opponent.user.username);
   const content = makeEmbedContent(player.role, visiblePlayers?.join());
-  return new MessageEmbed()
+  const embed = new MessageEmbed()
     .setTitle(`당신의 역할은 ${content.role}입니다.`)
     .setDescription(content.description)
-    .setColor(content.role in team.loyal ? "BLUE" : "RED")
-    .addField(content.fieldName, content.fieldValue);
+    .setColor(team.loyal.includes(content.role) ? "BLUE" : "RED");
+  if (content.fieldName && content.fieldValue)
+    embed.addField(content.fieldName, content.fieldValue);
+  return embed;
 };
 
 const makeEmbedContent = (role: Role, visiblePlayers?: string): content => {
@@ -158,7 +150,7 @@ const makeEmbedContent = (role: Role, visiblePlayers?: string): content => {
         fieldValue: "",
       };
     default:
-      throw new UnknownRoleError("역할을 찾을 수 업습니다.");
+      throw new UnknownRoleError("역할을 찾을 수 없습니다.");
   }
 };
 

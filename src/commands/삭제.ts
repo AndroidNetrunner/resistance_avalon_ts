@@ -1,6 +1,6 @@
 import { ICommand } from "wokcommands";
 import { active_hosts } from "../state";
-import { isValidRole } from "../roles";
+import { isValidAdditionalRole } from "../roles";
 const removeSpecialRole: ICommand = {
   category: "joining",
   description:
@@ -9,8 +9,8 @@ const removeSpecialRole: ICommand = {
   expectedArgs: "<role>",
   callback: ({ interaction, args }) => {
     const [role] = args;
-    if (!isValidRole(role) && role !== "멀린" && role !== "암살자")
-      return `${role}은(는) 존재하지 않는 특수역할입니다.`;
+    if (!isValidAdditionalRole(role))
+      return `${role}은(는) 존재하지 않는 추가역할입니다.`;
     const currentHost = active_hosts.get(interaction.channelId);
     if (!currentHost) return "시작한 게임이 존재하지 않습니다.";
     return currentHost.removeSpecialRole(role);
