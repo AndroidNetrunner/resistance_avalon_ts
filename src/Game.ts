@@ -168,17 +168,32 @@ class Game {
       .setDescription(
         `${assassin.user.username}님은 멀린이라고 생각되는 플레이어를 한 명 지목해주세요.`
       );
-    const candidateButtons = new MessageActionRow().addComponents(
-      validMerlinCandidates.map((player) =>
-        new MessageButton()
-          .setStyle("SECONDARY")
-          .setLabel(player.user.username)
-          .setCustomId(player.user.id)
-      )
+    const firstRowCandidateButtons = new MessageActionRow().addComponents(
+      validMerlinCandidates
+        .slice(0, 5)
+        .map((player) =>
+          new MessageButton()
+            .setStyle("SECONDARY")
+            .setLabel(player.user.username)
+            .setCustomId(player.user.id)
+        )
+    );
+    const secondRowCandidateButtons = new MessageActionRow().addComponents(
+      validMerlinCandidates
+        .slice(5)
+        .map((player) =>
+          new MessageButton()
+            .setStyle("SECONDARY")
+            .setLabel(player.user.username)
+            .setCustomId(player.user.id)
+        )
     );
     const message = await this._channelStartedGame.send({
       embeds: [embed],
-      components: [candidateButtons],
+      components:
+        validMerlinCandidates.length > 5
+          ? [firstRowCandidateButtons, secondRowCandidateButtons]
+          : [firstRowCandidateButtons],
     });
     const filter = (interaction: MessageComponentInteraction) =>
       interaction.user.id === assassin.user.id;
