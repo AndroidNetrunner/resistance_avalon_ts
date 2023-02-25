@@ -210,7 +210,7 @@ class Game {
         return player.role === Merlin;
       }
     }
-    return false;
+    throw new Error("No merlin Error");
   }
 }
 
