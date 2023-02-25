@@ -173,7 +173,7 @@ class Game {
         new MessageButton()
           .setStyle("SECONDARY")
           .setLabel(player.user.username)
-          .setCustomId(player.role)
+          .setCustomId(player.user.id)
       )
     );
     const message = await this._channelStartedGame.send({
@@ -183,10 +183,9 @@ class Game {
     const filter = (interaction: MessageComponentInteraction) =>
       interaction.user.id === assassin.user.id;
     message.awaitMessageComponent({ filter }).then((i) => {
-      const description =
-        i.customId === Merlin
-          ? "멀린 암살 성공으로 인한 악의 하수인 승리"
-          : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
+      const description = this.isSuccessfulAssassination(i.customId)
+        ? "멀린 암살 성공으로 인한 악의 하수인 승리"
+        : "3번의 미션 성공 및 멀린 암살 회피로 인한 선의 세력 승리";
       this.revealResult(description);
     });
   }
@@ -203,6 +202,15 @@ class Game {
       .setColor(description.includes("선의 세력 승리") ? "BLUE" : "RED");
     this._channelStartedGame.send({ embeds: [embed] });
     active_games.delete(this._channelStartedGame.id);
+  }
+
+  private isSuccessfulAssassination(targetId: string): boolean {
+    for (let player of this._playerList) {
+      if (player.user.id === targetId) {
+        return player.role === Merlin;
+      }
+    }
+    return false;
   }
 }
 
