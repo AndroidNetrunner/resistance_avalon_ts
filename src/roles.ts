@@ -61,6 +61,7 @@ const notifyRoleToPlayer = async (
   await player.user.send({
     embeds: [embed],
   });
+  console.log(player.user.username, player.role);
 };
 
 const makeEmbed = (
