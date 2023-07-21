@@ -24,7 +24,11 @@ class UnknownRoleError extends Error {
 }
 
 interface content {
+<<<<<<< HEAD
   role: Role;
+=======
+  role: string;
+>>>>>>> 0db737d67d978b54f64ee5cbca32f6c614cd3cd3
   description: string;
   fieldName: string;
   fieldValue: string;
@@ -61,7 +65,10 @@ const notifyRoleToPlayer = async (
   await player.user.send({
     embeds: [embed],
   });
+<<<<<<< HEAD
   console.log(player.user.username, player.role);
+=======
+>>>>>>> 0db737d67d978b54f64ee5cbca32f6c614cd3cd3
 };
 
 const makeEmbed = (
@@ -73,16 +80,29 @@ const makeEmbed = (
     visibleRole &&
     playerList
       .filter(
+<<<<<<< HEAD
         (opponent) => player !== opponent && visibleRole.includes(opponent.role)
+=======
+        (opponent) =>
+          player !== opponent &&
+          visibleRole.some((role) => role === opponent.role)
+>>>>>>> 0db737d67d978b54f64ee5cbca32f6c614cd3cd3
       )
       .map((opponent) => opponent.user.username);
   const content = makeEmbedContent(player.role, visiblePlayers?.join());
   const embed = new MessageEmbed()
     .setTitle(`당신의 역할은 ${content.role}입니다.`)
     .setDescription(content.description)
+<<<<<<< HEAD
     .setColor(team.loyal.includes(content.role) ? "BLUE" : "RED");
   if (content.fieldName && content.fieldValue)
     embed.addField(content.fieldName, content.fieldValue);
+=======
+    .setColor(
+      team.loyal.some((loyal) => loyal === content.role) ? "BLUE" : "RED"
+    );
+  if (content.fieldName) embed.addField(content.fieldName, content.fieldValue);
+>>>>>>> 0db737d67d978b54f64ee5cbca32f6c614cd3cd3
   return embed;
 };
 
@@ -151,7 +171,11 @@ const makeEmbedContent = (role: Role, visiblePlayers?: string): content => {
         fieldValue: "",
       };
     default:
+<<<<<<< HEAD
       throw new UnknownRoleError("역할을 찾을 수 없습니다.");
+=======
+      throw new UnknownRoleError("역할을 찾을 수 업습니다.");
+>>>>>>> 0db737d67d978b54f64ee5cbca32f6c614cd3cd3
   }
 };
 

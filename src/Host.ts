@@ -1,4 +1,4 @@
-import { Channel, TextBasedChannel, User } from "discord.js";
+import { TextBasedChannel, User } from "discord.js";
 import { team, Role, roles } from "./roles";
 
 class Host {
