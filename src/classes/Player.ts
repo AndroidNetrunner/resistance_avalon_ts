@@ -1,5 +1,5 @@
 import { User } from "discord.js";
-import { Role } from "./roles";
+import Role from "./Role";
 
 class Player {
   private _role: Role;

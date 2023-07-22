@@ -8,9 +8,15 @@ import {
 } from "discord.js";
 import Dealer from "./Dealer";
 import Host from "./Host";
-import Player from "./Player";
+import Player from "./classes/Player";
+import Role from "./classes/Role";
 import { active_games } from "./state";
-import notifyRoleToPlayer, { roles } from "./roles";
+import { roles } from "./constants";
+import makeEmbed from "./utils/makeEmbed";
+
+const { Merlin, Loyal, Evil, Assassin, Percival, Mordred, Morgana, Oberon } =
+  roles;
+
 const EventEmitter = require("events");
 
 function shuffle(array: any[]) {
@@ -39,9 +45,6 @@ const quest_sheet = {
   9: [3, 4, 4, 5, 5],
   10: [3, 4, 4, 5, 5],
 };
-
-const { Loyal, Evil, Merlin, Assassin, Percival, Mordred, Morgana, Oberon } =
-  roles;
 
 class Game {
   private _playerList: Player[];
@@ -127,14 +130,14 @@ class Game {
     for (let i in host.userList) {
       playerList.push(new Player(host.userList[i], allRoles[i], `${i}\u20E3`));
     }
+
     return playerList;
   }
 
   private async notifyRolesToPlayers(channel: TextBasedChannel) {
     try {
       this._playerList.forEach(
-        async (player: Player) =>
-          await notifyRoleToPlayer(player, this._playerList)
+        async (player: Player) => await this.notifyRoleToPlayer(player)
       );
     } catch (error) {
       channel.send(
@@ -144,6 +147,42 @@ class Game {
       );
     }
   }
+
+  private notifyRoleToPlayer = async (player: Player): Promise<void> => {
+    const { role } = player;
+    const { visibleRoles } = role;
+    const visiblePlayers = this.calculateVisiblePlayers(player, visibleRoles);
+    const data = {
+      title: `당신의 역할은 ${role.name}입니다!`,
+      description: role.description,
+      color: role.team,
+      fields:
+        visiblePlayers.length > 0
+          ? [
+              {
+                name: "당신의 눈에 보이는 사람들은...",
+                value: `${visiblePlayers.join(",")}입니다!`,
+              },
+            ]
+          : undefined,
+    };
+    const embed = makeEmbed(data);
+    await player.user.send({
+      embeds: [embed],
+    });
+  };
+
+  private calculateVisiblePlayers(
+    player: Player,
+    visibleRoles: Role[]
+  ): Player[] {
+    return this._playerList.filter(
+      (target) =>
+        player !== target &&
+        visibleRoles.map((role) => role.name).includes(target.role.name)
+    );
+  }
+
   private startNewRound() {
     return new Dealer(
       this._missionBoard[this._roundNumber - 1],
@@ -154,13 +193,13 @@ class Game {
       this._emitter
     );
   }
+
   private async notifyAssassinationToAssassin() {
     const validMerlinCandidates: Player[] = this._playerList.filter(
-      (player) =>
-        ![Assassin, Evil, Mordred, Morgana].some((role) => role === player.role)
+      (player) => ![Assassin, Evil, Mordred, Morgana].includes(player.role.name)
     );
     const assassin = this._playerList.find(
-      (player) => player.role === Assassin
+      (player) => player.role.name === Assassin
     );
     if (!assassin) throw new Error("No Assassin Error");
     const embed = new MessageEmbed()
@@ -222,7 +261,7 @@ class Game {
   private isSuccessfulAssassination(targetId: string): boolean {
     for (let player of this._playerList) {
       if (player.user.id === targetId) {
-        return player.role === Merlin;
+        return player.role.name === Merlin;
       }
     }
     throw new Error("No merlin Error");

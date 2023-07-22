@@ -7,8 +7,7 @@ import {
   TextBasedChannel,
   User,
 } from "discord.js";
-import Player from "./Player";
-import { team } from "./roles";
+import Player from "./classes/Player";
 
 function addAgreeAndDisagreeButtons() {
   const actionRow = new MessageActionRow();
@@ -200,7 +199,7 @@ class Dealer {
           .setStyle("DANGER")
           .setLabel("미션 실패")
           .setCustomId("missionFail")
-          .setDisabled(!team.evil.some((evil) => evil === player.role)),
+          .setDisabled(player.role.team === "BLUE"),
       ]);
     for (let player of this._proposedTeam) {
       const message = await player.user.send({
