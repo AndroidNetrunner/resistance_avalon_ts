@@ -12,7 +12,7 @@ import Player from "./classes/Player";
 import Role from "./classes/Role";
 import { active_games } from "./state";
 import { roles } from "./constants";
-import makeEmbed from "./utils/makeEmbed";
+import makeEmbedForRoleNotifyMessage from "./utils/makeEmbedForRoleNotifyMessage";
 
 const { Merlin, Loyal, Evil, Assassin, Percival, Mordred, Morgana, Oberon } =
   roles;
@@ -152,21 +152,7 @@ class Game {
     const { role } = player;
     const { visibleRoles } = role;
     const visiblePlayers = this.calculateVisiblePlayers(player, visibleRoles);
-    const data = {
-      title: `당신의 역할은 ${role.name}입니다!`,
-      description: role.description,
-      color: role.team,
-      fields:
-        visiblePlayers.length > 0
-          ? [
-              {
-                name: "당신의 눈에 보이는 사람들은...",
-                value: `${visiblePlayers.join(",")}입니다!`,
-              },
-            ]
-          : undefined,
-    };
-    const embed = makeEmbed(data);
+    const embed = makeEmbedForRoleNotifyMessage(role, visiblePlayers);
     await player.user.send({
       embeds: [embed],
     });
